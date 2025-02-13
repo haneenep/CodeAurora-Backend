@@ -1,4 +1,4 @@
-import { OTP as OtpEntity } from "@/domain/entities/otpEntity";
+import { IOtp } from "@/domain/entities/otpEntity";
 import mongoose, { Schema } from "mongoose";
 
 const OTPSchema : Schema = new mongoose.Schema(
@@ -13,7 +13,7 @@ const OTPSchema : Schema = new mongoose.Schema(
         },
         createdAt: {
             type: Date,
-            expires: "3min",
+            expires: 180,
             default: Date.now
         }
     },
@@ -22,5 +22,5 @@ const OTPSchema : Schema = new mongoose.Schema(
     }
 )
 
-export const OTP = mongoose.model<OtpEntity>("otp",OTPSchema);
+export const OTP = mongoose.model<IOtp>("otp",OTPSchema);
 

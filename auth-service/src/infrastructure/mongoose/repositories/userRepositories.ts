@@ -45,6 +45,8 @@ class UserRepository implements IUserRepository {
             
             const verifyOtp = await OTP.findOne({email,otp});
 
+            console.log(verifyOtp,"verifyotp")
+
             if(!verifyOtp){
                 return false;
             }
