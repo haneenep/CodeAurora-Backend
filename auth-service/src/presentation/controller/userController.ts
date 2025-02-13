@@ -4,6 +4,7 @@ import { SignupRequestDto } from "../../application/dtos/signupRequestDto";
 import { Request, Response } from "express";
 import { FindUserByEmailUseCase } from "../../application/interface/useCases/findUserByEmailUseCase";
 import { MailService } from "../../service/mailService";
+import { VerifyOtpUseCase } from "../../application/interface/useCases/verifyOtpUseCase";
 
 export class UserController {
 
@@ -46,8 +47,11 @@ export class UserController {
         message: "User Registered Successfully",
         newUser,
       });
+
     } catch (error: any) {
-      res.status(404).json({ success: false, error: error.message });
+
+      res.status(500).json({ success: false, error: error.message });
+
     }
   }
 
@@ -102,6 +106,37 @@ export class UserController {
     } catch (error: any) {
       
       res.status(500).json({success: false, error: error.message})
+    }
+  }
+
+  static async OtpVerification(req: Request, res: Response): Promise<any> {
+
+    try {
+
+      console.log(req.body)
+
+      const {email, otp} = req.body;
+
+      const userRepository = userRepositories
+
+      const verifyingUserOtp = new VerifyOtpUseCase(userRepository);
+
+      const isVerified = await verifyingUserOtp.execute(email,otp);
+
+      if(!isVerified){
+        return res.status(404).json({success: false, message: "Otp verification failed"})
+      }
+
+      return res.status(200).json({success: true, message: "otp verified successfully"})
+
+    } catch (error: any) {
+
+      console.error(error);
+      res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+      
     }
   }
 }

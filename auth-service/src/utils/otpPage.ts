@@ -134,18 +134,18 @@ export default function otpPage(otp: string) {
       <body>
       <div class="email-container">
           <div class="header">
-          Enigma
+          CodeAurora
           </div>
           <div class="body">
           <p>Hello,</p>
-          <p>We received a request to register your account in Enigma. Use the one-time password (OTP) below to complete the process. This OTP is valid for the next 10 minutes.</p>
+          <p>We received a request to register your account in CodeAurora. Use the one-time password (OTP) below to complete the process. This OTP is valid for the next 3 minutes.</p>
           <div class="otp-box">
               ${otp}
           </div>
           <p>If you did not make this request, please ignore this email or contact support if you have any concerns.</p>
           </div>
           <div class="footer">
-          <p>&copy; 2025 Enigma. All rights reserved.</p>
+          <p>&copy; 2025 CodeAurora. All rights reserved.</p>
           </div>
       </div>
       </body>

@@ -20,10 +20,10 @@ export class MailService {
     
             await sendMail(email, otp);
 
-            return otp;
-
         } catch (error) {
-            
+
+            console.error(error);
+                  
         }
     }
 }

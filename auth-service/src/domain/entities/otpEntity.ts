@@ -1,7 +1,7 @@
 import { ObjectId } from "mongoose";
 
 
-export interface OTP {
+export interface IOtp extends Document {
     _id: ObjectId;
     email: string;
     otp: string;

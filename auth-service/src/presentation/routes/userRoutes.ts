@@ -12,4 +12,6 @@ userRouter.get('/find-email/:id',UserController.findingUserEmail.bind(userContro
 
 userRouter.post('/email-verification',UserController.SendVerificationEmail.bind(userController));
 
+userRouter.post('/verify-otp',UserController.OtpVerification.bind(userController));
+
 export default userRouter;

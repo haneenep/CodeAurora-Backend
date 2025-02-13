@@ -28,7 +28,7 @@ export const sendMail = async (receiverEmail: string, OTP: string) => {
         from: process.env.USER_EMAIL,
         to: receiverEmail,
         subject: `CodeAurora - a problem solving platform`,
-        text: otpPage(OTP)
+        html: otpPage(OTP)
     };
 
     const info = await transporter.sendMail(mailOptions);
