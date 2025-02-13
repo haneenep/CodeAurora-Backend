@@ -1,6 +1,7 @@
 import { UserEntity } from "@/domain/entities";
 import UserModel from "../model/userModel";
 import { IUserRepository } from "@/domain/IRepositories/IUserRepositories";
+import { OTP } from "../model/otpModel";
 
 
 class UserRepository implements IUserRepository {
@@ -34,6 +35,23 @@ class UserRepository implements IUserRepository {
             
             console.error(error);
             throw new Error("Error while Find User in this email ");
+            
+        }
+    }
+
+    async verifyOtp(email: string, otp: string): Promise<boolean | any> {
+        
+        try {
+            
+            const verifyOtp = await OTP.findOne({email,otp});
+
+            if(!verifyOtp){
+                return false;
+            }
+
+            return true;
+
+        } catch (error) {
             
         }
     }

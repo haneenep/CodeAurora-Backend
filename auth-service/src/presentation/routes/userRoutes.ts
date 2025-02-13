@@ -10,5 +10,6 @@ userRouter.post('/signup',UserController.register.bind(userController));
 
 userRouter.get('/find-email/:id',UserController.findingUserEmail.bind(userController));
 
+userRouter.post('/email-verification',UserController.SendVerificationEmail.bind(userController));
 
 export default userRouter;

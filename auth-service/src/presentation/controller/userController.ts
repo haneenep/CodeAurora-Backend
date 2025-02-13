@@ -3,8 +3,10 @@ import { SignupUserCase } from "../../application//interface/useCases/signupUseC
 import { SignupRequestDto } from "../../application/dtos/signupRequestDto";
 import { Request, Response } from "express";
 import { FindUserByEmailUseCase } from "../../application/interface/useCases/findUserByEmailUseCase";
+import { MailService } from "../../service/mailService";
 
 export class UserController {
+
   static async register(req: Request, res: Response): Promise<void> {
     try {
       console.log(req.body, "from frontend");
@@ -52,7 +54,7 @@ export class UserController {
   static async findingUserEmail(
     req: Request,
     res: Response
-  ) {
+  ) : Promise<Response | any> {
     try {
       console.log(req.params, "params");
 
@@ -82,6 +84,24 @@ export class UserController {
         success: false,
         error: error.message,
       });
+    }
+  }
+
+  static async SendVerificationEmail(req: Request, res: Response) {
+
+    try {
+
+      console.log(req.body,"body")
+
+      const {email} = req.body;
+
+      await MailService.sendVerificationMail(email);
+
+      res.status(200).json({success: true, message: "OTP send successfully"})
+
+    } catch (error: any) {
+      
+      res.status(500).json({success: false, error: error.message})
     }
   }
 }

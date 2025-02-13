@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer"
 import { config } from "dotenv"
-import otpPage from "@/utils/otpPage";
+import otpPage from "../utils/otpPage";
 
 config();
 
