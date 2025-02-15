@@ -1,6 +1,7 @@
 import express, {Application, json, NextFunction, Request, Response} from 'express';
 import database from './infrastructure/config/database';
 import userRouter from './presentation/routes/userRoutes';
+import cookies from "cookie-parser";
 import { config } from 'dotenv';
 
 config();
@@ -24,6 +25,7 @@ class App {
     private initializeMiddlewears(): void {
         this.app.use(express.json({ limit: "10mb"}));
         this.app.use(express.urlencoded({extended: true, limit: "10mb"}));
+        this.app.use(cookies());
     }
 
     private initializeRoutes(): void {
