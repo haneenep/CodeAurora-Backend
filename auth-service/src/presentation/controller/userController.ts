@@ -5,13 +5,13 @@ import { Request, Response } from "express";
 import { FindUserByEmailUseCase } from "../../application/interface/useCases/findUserByEmailUseCase";
 import { MailService } from "../../service/mailService";
 import { VerifyOtpUseCase } from "../../application/interface/useCases/verifyOtpUseCase";
+import { generateAccessToken, generateRefreshToken } from "@/utils/token";
+import { HttpStatus } from "@/constants/HttpStatus";
+import { ERROR_MESSAGES } from "@/constants/ErrorResponses";
 
 export class UserController {
-
   static async register(req: Request, res: Response): Promise<void> {
     try {
-      console.log(req.body, "from frontend");
-
       const {
         userName,
         email,
@@ -42,23 +42,53 @@ export class UserController {
 
       const newUser = await registerUseCase.execute(dto);
 
-      res.status(200).json({
-        success: true,
-        message: "User Registered Successfully",
-        newUser,
-      });
+      if (!newUser) {
+        res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: ERROR_MESSAGES.NOT_FOUND});
+      } else {
+
+        const accessToken = generateAccessToken({
+          _id: String(newUser?._id),
+          email: newUser?.email,
+          role: newUser?.role,
+        });
+        
+        const refreshToken = generateRefreshToken({
+          _id: String(newUser?._id),
+          email: newUser?.email,
+          role: newUser?.role  
+        });
+
+        res.cookie("access_token",accessToken,{
+          httpOnly: true,
+          secure: true,
+          sameSite: "none"
+        })
+
+        res.cookie("refresh_token",refreshToken,{
+          httpOnly: true,
+          secure: true,
+          sameSite: "none"
+        })
+  
+        res.status(HttpStatus.CREATED).json({
+          success: true,
+          message: "User Registered Successfully",
+          data: newUser,
+        });
+
+      }
 
     } catch (error: any) {
-
       res.status(500).json({ success: false, error: error.message });
-
     }
   }
 
   static async findingUserEmail(
     req: Request,
     res: Response
-  ) : Promise<Response | any> {
+  ): Promise<Response | any> {
     try {
       console.log(req.params, "params");
 
@@ -81,7 +111,6 @@ export class UserController {
       return res
         .status(200)
         .json({ succes: false, message: "This email is not registered" });
-
     } catch (error: any) {
       console.error(error);
       res.status(500).json({
@@ -92,51 +121,46 @@ export class UserController {
   }
 
   static async SendVerificationEmail(req: Request, res: Response) {
-
     try {
+      console.log(req.body, "body");
 
-      console.log(req.body,"body")
-
-      const {email} = req.body;
+      const { email } = req.body;
 
       await MailService.sendVerificationMail(email);
 
-      res.status(200).json({success: true, message: "OTP send successfully"})
-
+      res.status(200).json({ success: true, message: "OTP send successfully" });
     } catch (error: any) {
-      
-      res.status(500).json({success: false, error: error.message})
+      res.status(500).json({ success: false, error: error.message });
     }
   }
 
   static async OtpVerification(req: Request, res: Response): Promise<any> {
-
     try {
+      console.log(req.body);
 
-      console.log(req.body)
+      const { email, otp } = req.body;
 
-      const {email, otp} = req.body;
-
-      const userRepository = userRepositories
+      const userRepository = userRepositories;
 
       const verifyingUserOtp = new VerifyOtpUseCase(userRepository);
 
-      const isVerified = await verifyingUserOtp.execute(email,otp);
+      const isVerified = await verifyingUserOtp.execute(email, otp);
 
-      if(!isVerified){
-        return res.status(404).json({success: false, message: "Otp verification failed"})
+      if (!isVerified) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Otp verification failed" });
       }
 
-      return res.status(200).json({success: true, message: "otp verified successfully"})
-
+      return res
+        .status(200)
+        .json({ success: true, message: "otp verified successfully" });
     } catch (error: any) {
-
       console.error(error);
       res.status(500).json({
         success: false,
         error: error.message,
       });
-      
     }
   }
 }

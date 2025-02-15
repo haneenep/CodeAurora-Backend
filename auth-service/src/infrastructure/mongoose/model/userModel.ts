@@ -40,8 +40,7 @@ const UserSchema : Schema = new Schema(
         status: {
             type: String,
             required: true,
-            enum: ["active","blocked"],
-            default: "active"
+            default: true
         },
         subscriptionType: {
             type: String,
