@@ -2,6 +2,7 @@ import { UserEntity } from "@/domain/entities";
 import UserModel from "../model/userModel";
 import { IUserRepository } from "@/domain/IRepositories/IUserRepositories";
 import { OTP } from "../model/otpModel";
+import { comparePassword } from "../../../lib/http/bcrypt/comparePassword";
 
 
 class UserRepository implements IUserRepository {
@@ -55,6 +56,27 @@ class UserRepository implements IUserRepository {
 
         } catch (error) {
             
+        }
+    }
+
+    async signin(data:{email: string, password: string}): Promise<UserEntity> {
+        try {
+            const user = await UserModel.findOne({email: data.email});
+
+            if(!user){
+                throw new Error("User not find in db");
+            }
+
+            const isMatch = await comparePassword(data.password, user.password);
+
+            if(!isMatch){
+                throw new Error("Password is not matching");
+            }
+
+            return user;
+
+        } catch (error: any) {
+            throw new Error(error.message)
         }
     }
 }

@@ -5,9 +5,12 @@ import { Request, Response } from "express";
 import { FindUserByEmailUseCase } from "../../application/interface/useCases/findUserByEmailUseCase";
 import { MailService } from "../../service/mailService";
 import { VerifyOtpUseCase } from "../../application/interface/useCases/verifyOtpUseCase";
-import { generateAccessToken, generateRefreshToken } from "@/utils/token";
-import { HttpStatus } from "@/constants/HttpStatus";
-import { ERROR_MESSAGES } from "@/constants/ErrorResponses";
+import { generateAccessToken, generateRefreshToken } from "../../utils/token";
+import { HttpStatus } from "../../constants/HttpStatus";
+import { ERROR_MESSAGES } from "../../constants/ErrorResponses";
+import { SigninRequestDto } from "../../application/dtos/signinRequestDto";
+import { SigninUseCase } from "../../application/interface/useCases/signinUseCase";
+import { UserEntity } from "@/domain/entities";
 
 export class UserController {
   static async register(req: Request, res: Response): Promise<void> {
@@ -110,7 +113,8 @@ export class UserController {
 
       return res
         .status(200)
-        .json({ succes: false, message: "This email is not registered" });
+        .json({ success: false, message: "This email is not registered" });
+
     } catch (error: any) {
       console.error(error);
       res.status(500).json({
@@ -161,6 +165,58 @@ export class UserController {
         success: false,
         error: error.message,
       });
+    }
+  }
+
+  static async signin(req: Request, res: Response): Promise<Response | any> {
+
+    try {
+      
+      console.log(req.body,"login data");
+
+      const { email, password } = req.body;
+
+      const dto = new SigninRequestDto(email,password);
+
+      const userRepository = userRepositories;
+
+      const signinUseCase = new SigninUseCase(userRepository);
+
+      const user = await signinUseCase.execute(dto);
+
+      if(!user){
+        return res.status(404).json({success: false, message: "User is not existing or incorrect password"});
+      };
+
+      const access_token = generateAccessToken({
+        _id: String(user?._id),
+        email: user.email,
+        role: user.role
+      });
+      const refresh_token = generateAccessToken({
+        _id: String(user?._id),
+        email: user.email,
+        role: user.role
+      });
+
+      res.cookie("access_token", access_token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none"
+      });
+      res.cookie("refresh_token", access_token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none"
+      });
+
+      console.log(user,'sigined');
+
+      return res.status(200).json({success: true, message: "successfully logined user", data: user})
+      
+
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR})
     }
   }
 }
