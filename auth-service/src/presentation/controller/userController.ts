@@ -1,7 +1,7 @@
 import userRepositories from "../../infrastructure/mongoose/repositories/userRepositories";
 import { SignupUserCase } from "../../application//interface/useCases/signupUseCase";
 import { SignupRequestDto } from "../../application/dtos/signupRequestDto";
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { FindUserByEmailUseCase } from "../../application/interface/useCases/findUserByEmailUseCase";
 import { MailService } from "../../service/mailService";
 import { VerifyOtpUseCase } from "../../application/interface/useCases/verifyOtpUseCase";
@@ -11,6 +11,7 @@ import { ERROR_MESSAGES } from "../../constants/ErrorResponses";
 import { SigninRequestDto } from "../../application/dtos/signinRequestDto";
 import { SigninUseCase } from "../../application/interface/useCases/signinUseCase";
 import { UserEntity } from "@/domain/entities";
+import { GetUserData } from "../../application/interface/useCases/getUserDataUseCase";
 
 export class UserController {
   static async register(req: Request, res: Response): Promise<void> {
@@ -182,41 +183,81 @@ export class UserController {
 
       const signinUseCase = new SigninUseCase(userRepository);
 
-      const user = await signinUseCase.execute(dto);
+      try {
+        const user = await signinUseCase.execute(dto);
+  
+        const access_token = generateAccessToken({
+          _id: String(user?._id),
+          email: user.email,
+          role: user.role
+        });
+        const refresh_token = generateAccessToken({
+          _id: String(user?._id),
+          email: user.email,
+          role: user.role
+        });
+  
+        res.cookie("access_token", access_token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none"
+        });
+        res.cookie("refresh_token", refresh_token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none"
+        });
+  
+        console.log(user,'sigined');
+  
+        return res.status(200).json({success: true, message: "successfully logined user", data: user})
+        
+      } catch (error: any) {
 
-      if(!user){
-        return res.status(404).json({success: false, message: "User is not existing or incorrect password"});
-      };
+          return res.status(404).json({success: false, message: error.message || "Invalid email or password"});
 
-      const access_token = generateAccessToken({
-        _id: String(user?._id),
-        email: user.email,
-        role: user.role
-      });
-      const refresh_token = generateAccessToken({
-        _id: String(user?._id),
-        email: user.email,
-        role: user.role
-      });
-
-      res.cookie("access_token", access_token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none"
-      });
-      res.cookie("refresh_token", access_token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none"
-      });
-
-      console.log(user,'sigined');
-
-      return res.status(200).json({success: true, message: "successfully logined user", data: user})
-      
+      }
 
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR})
+    }
+  }
+
+  static async getUserData(req: Request, res: Response, next: NextFunction):Promise<any> {
+    console.log(req.user,"request user");
+    try {
+      
+      if(!req.user){
+        throw new Error("Authentication required: No user found")
+      }
+
+      const {_id} = req.user;
+
+      const userRepository = userRepositories
+
+      const getUserUseCase = new GetUserData(userRepository);
+
+      const isUser = getUserUseCase.execute(_id);
+
+      console.log(isUser)
+
+      if(!isUser){
+        return res.status(404).json({
+          success: false,
+          message: "No user data"
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: isUser,
+        message: "gotten userdata successfully"
+      })
+
+
+    } catch (error) {
+      console.log("Error while getting user",error)
+      next(error)
     }
   }
 }

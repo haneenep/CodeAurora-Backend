@@ -64,13 +64,29 @@ class UserRepository implements IUserRepository {
             const user = await UserModel.findOne({email: data.email});
 
             if(!user){
-                throw new Error("User not find in db");
+                throw new Error("User not found");
             }
 
             const isMatch = await comparePassword(data.password, user.password);
 
             if(!isMatch){
-                throw new Error("Password is not matching");
+                throw new Error("Incorrect Password");
+            }
+
+            return user;
+
+        } catch (error: any) {
+            throw new Error(error.message)
+        }
+    }
+
+    async getUserData(_id: string): Promise<UserEntity | null> {
+        try {
+            
+            const user = await UserModel.findById(_id);
+
+            if(!user){
+                return null;
             }
 
             return user;

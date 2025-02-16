@@ -10,17 +10,21 @@ const UserSchema : Schema = new Schema(
         },
         email: {
             type: String,
-            required: true
+            required: true,
+            unique: true
         },
         password: {
             type: String,
             required: true
         },
         role: {
-            type: String
+            type: String,
+            enum: ["user","admin"],
+            default: "user"
         },
         isAdmin: {
-            type: Boolean
+            type: Boolean,
+            default: false
         },
         profileImage: {
             type: String
@@ -38,7 +42,7 @@ const UserSchema : Schema = new Schema(
             type: Date
         },
         status: {
-            type: String,
+            type: Boolean,
             required: true,
             default: true
         },
@@ -54,4 +58,4 @@ const UserSchema : Schema = new Schema(
     }
 )
 
-export default mongoose.model<UserEntity>("Users",UserSchema)
+export default mongoose.model<UserEntity>("User",UserSchema)

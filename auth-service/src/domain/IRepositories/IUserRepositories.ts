@@ -6,4 +6,5 @@ export interface IUserRepository {
     findByEmail(email: string): Promise<UserEntity | null>;
     verifyOtp(email: string, otp: string): Promise<boolean>;
     signin(data:{email: string, password: string}): Promise<UserEntity>
+    getUserData(_id: string): Promise<UserEntity | null>
 }
