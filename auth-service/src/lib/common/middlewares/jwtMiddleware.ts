@@ -1,24 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { TokenExpiredError, JsonWebTokenError } from "jsonwebtoken";
 import { config } from "dotenv";
-import { generateAccessToken } from "@/utils/token";
-import { ERROR_MESSAGES } from "@/constants/ErrorResponses";
+import { generateAccessToken } from "../../../utils/token";
+import { ERROR_MESSAGES } from "../../../constants/ErrorResponses";
+import { UserPayload } from "../../../types/authTypes";
 
 config();
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: UserPayload;
-    }
-  }
-}
-
-interface UserPayload {
-  _id: string;
-  email: string;
-  role: string;
-}
 
 const verifyToken = (token: string, secret: string) => {
   console.log(token, secret, "kk");
@@ -41,7 +29,7 @@ export const jwtMiddleWare = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { access_token, refresh_token } = req.cookies;
 
@@ -80,7 +68,8 @@ export const jwtMiddleWare = async (
     }
 
     if (!user) {
-      return res.status(401).json({ message: ERROR_MESSAGES.UNAUTHORIZED });
+      res.status(401).json({ message: ERROR_MESSAGES.UNAUTHORIZED });
+      return;
     }
 
     console.log(user, "user after set the jwt");
@@ -89,8 +78,9 @@ export const jwtMiddleWare = async (
     next();
   } catch (error) {
     console.error("Error in jwt middlewear", error);
-    return res
+    res
       .status(500)
       .json({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+      return;
   }
 };

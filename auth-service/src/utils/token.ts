@@ -1,14 +1,9 @@
-import jwt from "jsonwebtoken";
+import jwt, { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 import { config } from "dotenv";
+import { UserPayload } from "@/types/authTypes";
 
 
 config()
-
-interface UserPayload{
-    _id: string;
-    email: string;
-    role: string;
-}
 
 export const generateAccessToken = (payload: UserPayload) => {
     
@@ -28,3 +23,18 @@ export const generateRefreshToken = (payload: UserPayload) => {
         { expiresIn: "15d"}
     );
 };
+
+export const verifyToken = (token: string, secret: string): UserPayload | null => {
+    try {
+      return jwt.verify(token, secret) as UserPayload;
+    } catch (error) {
+      if (
+        error instanceof TokenExpiredError ||
+        error instanceof JsonWebTokenError
+      ) {
+        console.error("Error verifying token:", error.message);
+        return null;
+      }
+      throw error;
+    }
+  };
