@@ -6,35 +6,31 @@ import { UserPayload } from "@/types/authTypes";
 config()
 
 export const generateAccessToken = (payload: UserPayload) => {
-    
-    const { _id, email, role} = payload;
+  const { _id, email, role } = payload;
+  const newPayload = { _id, email, role };
 
-    const newPayload = {_id, email, role};
-
-    return jwt.sign(
-        newPayload,
-        process.env.ACCESS_TOKEN_SECRET as string,
-        { expiresIn: "1m"}
-    );
+  return jwt.sign(newPayload, process.env.ACCESS_TOKEN_SECRET as string, {
+    expiresIn: "1m",
+  });
 };
 
 export const generateRefreshToken = (payload: UserPayload) => {
-    return jwt.sign(payload,process.env.REFRESH_TOKEN_SECRET as string,
-        { expiresIn: "15d"}
-    );
+  return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET as string, {
+    expiresIn: "15d",
+  });
 };
 
 export const verifyToken = (token: string, secret: string): UserPayload | null => {
-    try {
-      return jwt.verify(token, secret) as UserPayload;
-    } catch (error) {
-      if (
-        error instanceof TokenExpiredError ||
-        error instanceof JsonWebTokenError
-      ) {
-        console.error("Error verifying token:", error.message);
-        return null;
-      }
-      throw error;
+  try {
+
+    return jwt.verify(token, secret) as UserPayload;
+
+  } catch (error) {
+    if (error instanceof TokenExpiredError) {
+      console.error("Token expired:", error.message);
+    } else if (error instanceof JsonWebTokenError) {
+      console.error("Invalid token:", error.message);
     }
-  };
+    return null;
+  }
+};

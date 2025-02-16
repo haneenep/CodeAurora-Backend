@@ -237,7 +237,7 @@ export class UserController {
 
       const getUserUseCase = new GetUserData(userRepository);
 
-      const isUser = getUserUseCase.execute(_id);
+      const isUser = await getUserUseCase.execute(_id);
 
       console.log(isUser)
 
