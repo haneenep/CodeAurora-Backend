@@ -14,4 +14,6 @@ userRouter.post('/email-verification',UserController.SendVerificationEmail.bind(
 
 userRouter.post('/verify-otp',UserController.OtpVerification.bind(userController));
 
+userRouter.post('/signin', UserController.signin.bind(userController));
+
 export default userRouter;
