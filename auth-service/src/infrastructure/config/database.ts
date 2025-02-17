@@ -7,6 +7,8 @@ export default async () => {
     try {
         
         const mongoUrl = process.env.MONGO_URI;
+
+        console.log(mongoUrl,"url")
     
         if(!mongoUrl){
             throw new Error("mongodb connection string is not provided in env");

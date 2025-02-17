@@ -52,6 +52,8 @@ class UserRepository implements IUserRepository {
                 return false;
             }
 
+            await OTP.deleteOne({ email, otp })
+
             return true;
 
         } catch (error) {

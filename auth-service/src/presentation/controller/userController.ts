@@ -10,8 +10,14 @@ import { HttpStatus } from "../../constants/HttpStatus";
 import { ERROR_MESSAGES } from "../../constants/ErrorResponses";
 import { SigninRequestDto } from "../../application/dtos/signinRequestDto";
 import { SigninUseCase } from "../../application/interface/useCases/signinUseCase";
-import { UserEntity } from "@/domain/entities";
 import { GetUserData } from "../../application/interface/useCases/getUserDataUseCase";
+import { OAuth2Client } from "google-auth-library";
+import { config } from "dotenv";
+import { generateRandomString } from "../../lib/utils/generateRandomString";
+
+config()
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export class UserController {
   static async register(req: Request, res: Response): Promise<void> {
@@ -96,13 +102,13 @@ export class UserController {
     try {
       console.log(req.params, "params");
 
-      const { id } = req.params;
+      const { email } = req.params;
 
       const userRepository = userRepositories;
 
       const findUserByEmailUseCase = new FindUserByEmailUseCase(userRepository);
 
-      const existingUser = await findUserByEmailUseCase.execute(id);
+      const existingUser = await findUserByEmailUseCase.execute(email);
 
       if (existingUser) {
         return res.status(200).json({
@@ -154,7 +160,7 @@ export class UserController {
       if (!isVerified) {
         return res
           .status(404)
-          .json({ success: false, message: "Otp verification failed" });
+          .json({ success: false, message: "Invalid or expired otp" });
       }
 
       return res
@@ -191,7 +197,7 @@ export class UserController {
           email: user.email,
           role: user.role
         });
-        const refresh_token = generateAccessToken({
+        const refresh_token = generateRefreshToken({
           _id: String(user?._id),
           email: user.email,
           role: user.role
@@ -258,6 +264,90 @@ export class UserController {
     } catch (error) {
       console.log("Error while getting user",error)
       next(error)
+    }
+  }
+
+  static async googleAuthentication(req: Request, res: Response): Promise<any>{
+
+    try {
+      
+      const { credential} = req.body;
+
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID
+      });
+
+      const payload = ticket.getPayload();
+
+      if(!payload || !payload.email){
+        return res.status(404).json({
+          success: false,
+          message: "Ivalid Google token or No Email address"
+        });
+      }
+
+      console.log(payload,"payload")
+
+      const findUserByEmailUseCase = await new FindUserByEmailUseCase(userRepositories);
+
+      const existingUser = await findUserByEmailUseCase.execute(payload.email);
+
+      console.log(existingUser,"existingusersrr")
+
+      if(!existingUser){
+        const signupData = {
+          email: payload.email,
+          password: `${generateRandomString()}`,
+          userName: payload.given_name
+        }
+
+        console.log(signupData,"gsignup")
+
+        return res.status(200).json({
+          success: true,
+          existingUser: false,
+          data: signupData,
+          message: "User Google Login"
+        })
+
+      } else {
+
+        const access_token = generateAccessToken({
+          _id: String(existingUser?._id),
+          email: existingUser.email,
+          role: existingUser.role
+        });
+        const refresh_token = generateRefreshToken({
+          _id: String(existingUser?._id),
+          email: existingUser.email,
+          role: existingUser.role
+        });
+  
+        res.cookie("access_token", access_token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none"
+        });
+        res.cookie("refresh_token", refresh_token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none"
+        });
+
+        return res.status(200).json({
+          success: true,
+          existingUser: true,
+          data: existingUser,
+          message: "Google Login successfully"
+        })
+      }
+
+    } catch (error) {
+      console.log(error,"error while authenticating with google");
+      res.status(500).json({
+        message: "something happened logging gauth"
+      });
     }
   }
 }
