@@ -17,6 +17,8 @@ userRouter.post('/verify-otp',UserController.OtpVerification);
 
 userRouter.post('/signin', UserController.signin);
 
-userRouter.get('/get-userdata',jwtMiddleWare,UserController.getUserData)
+userRouter.get('/get-userdata',jwtMiddleWare,UserController.getUserData);
+
+userRouter.post('/google-auth', UserController.googleAuthentication);
 
 export default userRouter;

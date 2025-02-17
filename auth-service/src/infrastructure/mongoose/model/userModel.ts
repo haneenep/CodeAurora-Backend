@@ -32,8 +32,9 @@ const UserSchema : Schema = new Schema(
         bio: {
             type: String
         },
-        github: {
-            type: String
+        isGAuth: {
+            type: Boolean,
+            default: false
         },
         createdAt: {
             type: Date
