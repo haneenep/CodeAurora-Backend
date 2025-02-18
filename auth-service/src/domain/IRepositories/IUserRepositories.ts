@@ -7,4 +7,6 @@ export interface IUserRepository {
     verifyOtp(email: string, otp: string): Promise<boolean>;
     signin(data:{email: string, password: string}): Promise<UserEntity>
     getUserData(_id: string): Promise<UserEntity | null>
+    resetPassword(email: string, password: string): Promise<UserEntity>
+    updateUserName(userName: string, email: string): Promise<UserEntity>
 }

@@ -9,7 +9,7 @@ export interface UserEntity {
     role: string;
     profileImage: string;
     isBlocked: boolean;
-    github?: string;
+    isGAuth: boolean;
     bio?: string;
     isAdmin?: boolean
     createdAt?: Date;

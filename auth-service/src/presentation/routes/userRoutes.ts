@@ -9,7 +9,7 @@ const userRouter = Router();
 
 userRouter.post('/signup',UserController.register);
 
-userRouter.get('/find-email/:id',UserController.findingUserEmail);
+userRouter.get('/find-email/:email',UserController.findingUserEmail);
 
 userRouter.post('/email-verification',UserController.SendVerificationEmail);
 
@@ -20,5 +20,11 @@ userRouter.post('/signin', UserController.signin);
 userRouter.get('/get-userdata',jwtMiddleWare,UserController.getUserData);
 
 userRouter.post('/google-auth', UserController.googleAuthentication);
+
+userRouter.post('/forgot-password-mail',UserController.forgotPasswordMail);
+
+userRouter.post('/reset-password',UserController.resetPassword);
+
+userRouter.put('/user-profile',UserController.updateUserName);
 
 export default userRouter;

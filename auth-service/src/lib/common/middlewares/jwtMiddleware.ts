@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { config } from "dotenv";
-import { generateAccessToken, verifyToken } from "../../../utils/token";
+import { generateAccessToken, verifyToken } from "../../http/jwt/token";
 import { ERROR_MESSAGES } from "../../../constants/ErrorResponses";
 import { UserPayload } from "../../../types/authTypes";
 
