@@ -8,8 +8,8 @@ export class SignupRequestDto {
         public role: string,
         public profileImage: string,
         public isBlocked: boolean,
-        public github: string,
         public bio: string,
-        public isAdmin: boolean
+        public isAdmin: boolean,
+        public isGAuth: boolean
     ){}
 }

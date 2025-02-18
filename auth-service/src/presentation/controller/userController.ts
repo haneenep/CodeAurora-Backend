@@ -5,7 +5,6 @@ import { NextFunction, Request, Response } from "express";
 import { FindUserByEmailUseCase } from "../../application/interface/useCases/findUserByEmailUseCase";
 import { MailService } from "../../service/mailService";
 import { VerifyOtpUseCase } from "../../application/interface/useCases/verifyOtpUseCase";
-import { generateAccessToken, generateRefreshToken } from "../../utils/token";
 import { HttpStatus } from "../../constants/HttpStatus";
 import { ERROR_MESSAGES } from "../../constants/ErrorResponses";
 import { SigninRequestDto } from "../../application/dtos/signinRequestDto";
@@ -14,8 +13,15 @@ import { GetUserData } from "../../application/interface/useCases/getUserDataUse
 import { OAuth2Client } from "google-auth-library";
 import { config } from "dotenv";
 import { generateRandomString } from "../../lib/utils/generateRandomString";
+import { hashPassword } from "../../lib/http/bcrypt/hashPassword";
+import { generateAccessToken, generateRefreshToken } from "../../lib/http/jwt/token";
+import { generateForgotPasswordToken } from "../../lib/http/jwt/generateForgotPasswordToken";
+import { verifyForgotPasswordToken } from "../../lib/http/jwt/verifyForgotPasswordToken";
+import { ResetPassword } from "../../application/interface/useCases/resetPasswordUseCase";
+import { UpdateUserNameUseCase } from "../../application/interface/useCases/updateUserNameUseCase";
 
-config()
+
+config();
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -30,7 +36,7 @@ export class UserController {
         profileImage,
         isBlocked,
         isAdmin,
-        github,
+        isGAuth,
         bio,
       } = req.body;
 
@@ -42,7 +48,7 @@ export class UserController {
         profileImage,
         isBlocked,
         isAdmin,
-        github,
+        isGAuth,
         bio
       );
 
@@ -55,41 +61,38 @@ export class UserController {
       if (!newUser) {
         res
           .status(HttpStatus.NOT_FOUND)
-          .json({ message: ERROR_MESSAGES.NOT_FOUND});
+          .json({ message: ERROR_MESSAGES.NOT_FOUND });
       } else {
-
         const accessToken = generateAccessToken({
           _id: String(newUser?._id),
           email: newUser?.email,
           role: newUser?.role,
         });
-        
+
         const refreshToken = generateRefreshToken({
           _id: String(newUser?._id),
           email: newUser?.email,
-          role: newUser?.role  
+          role: newUser?.role,
         });
 
-        res.cookie("access_token",accessToken,{
+        res.cookie("access_token", accessToken, {
           httpOnly: true,
           secure: true,
-          sameSite: "none"
-        })
+          sameSite: "none",
+        });
 
-        res.cookie("refresh_token",refreshToken,{
+        res.cookie("refresh_token", refreshToken, {
           httpOnly: true,
           secure: true,
-          sameSite: "none"
-        })
-  
+          sameSite: "none",
+        });
+
         res.status(HttpStatus.CREATED).json({
           success: true,
           message: "User Registered Successfully",
           data: newUser,
         });
-
       }
-
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
     }
@@ -121,7 +124,6 @@ export class UserController {
       return res
         .status(200)
         .json({ success: false, message: "This email is not registered" });
-
     } catch (error: any) {
       console.error(error);
       res.status(500).json({
@@ -176,14 +178,12 @@ export class UserController {
   }
 
   static async signin(req: Request, res: Response): Promise<Response | any> {
-
     try {
-      
-      console.log(req.body,"login data");
+      console.log(req.body, "login data");
 
       const { email, password } = req.body;
 
-      const dto = new SigninRequestDto(email,password);
+      const dto = new SigninRequestDto(email, password);
 
       const userRepository = userRepositories;
 
@@ -191,163 +191,295 @@ export class UserController {
 
       try {
         const user = await signinUseCase.execute(dto);
-  
+
         const access_token = generateAccessToken({
           _id: String(user?._id),
           email: user.email,
-          role: user.role
+          role: user.role,
         });
         const refresh_token = generateRefreshToken({
           _id: String(user?._id),
           email: user.email,
-          role: user.role
+          role: user.role,
         });
-  
+
         res.cookie("access_token", access_token, {
           httpOnly: true,
           secure: true,
-          sameSite: "none"
+          sameSite: "none",
         });
         res.cookie("refresh_token", refresh_token, {
           httpOnly: true,
           secure: true,
-          sameSite: "none"
+          sameSite: "none",
         });
-  
-        console.log(user,'sigined');
-  
-        return res.status(200).json({success: true, message: "successfully logined user", data: user})
-        
+
+        console.log(user, "sigined");
+
+        return res
+          .status(200)
+          .json({
+            success: true,
+            message: "successfully logined user",
+            data: user,
+          });
       } catch (error: any) {
-
-          return res.status(404).json({success: false, message: error.message || "Invalid email or password"});
-
+        return res
+          .status(404)
+          .json({
+            success: false,
+            message: error.message || "Invalid email or password",
+          });
       }
-
     } catch (error) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR})
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
     }
   }
 
-  static async getUserData(req: Request, res: Response, next: NextFunction):Promise<any> {
-    console.log(req.user,"request user");
+  static async getUserData(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
+    console.log(req.user, "request user");
     try {
-      
-      if(!req.user){
-        throw new Error("Authentication required: No user found")
+      if (!req.user) {
+        throw new Error("Authentication required: No user found");
       }
 
-      const {_id} = req.user;
+      const { _id } = req.user;
 
-      const userRepository = userRepositories
+      const userRepository = userRepositories;
 
       const getUserUseCase = new GetUserData(userRepository);
 
       const isUser = await getUserUseCase.execute(_id);
 
-      console.log(isUser)
+      console.log(isUser);
 
-      if(!isUser){
+      if (!isUser) {
         return res.status(404).json({
           success: false,
-          message: "No user data"
+          message: "No user data",
         });
       }
 
       return res.status(200).json({
         success: true,
         data: isUser,
-        message: "gotten userdata successfully"
-      })
-
-
+        message: "gotten userdata successfully",
+      });
     } catch (error) {
-      console.log("Error while getting user",error)
-      next(error)
+      console.log("Error while getting user", error);
+      next(error);
     }
   }
 
-  static async googleAuthentication(req: Request, res: Response): Promise<any>{
-
+  static async googleAuthentication(req: Request, res: Response): Promise<any> {
     try {
-      
-      const { credential} = req.body;
+      const { credential } = req.body;
 
       const ticket = await client.verifyIdToken({
         idToken: credential,
-        audience: process.env.GOOGLE_CLIENT_ID
+        audience: process.env.GOOGLE_CLIENT_ID,
       });
 
       const payload = ticket.getPayload();
 
-      if(!payload || !payload.email){
+      if (!payload || !payload.email) {
         return res.status(404).json({
           success: false,
-          message: "Ivalid Google token or No Email address"
+          message: "Ivalid Google token or No Email address",
         });
       }
 
-      console.log(payload,"payload")
+      console.log(payload, "payload");
 
-      const findUserByEmailUseCase = await new FindUserByEmailUseCase(userRepositories);
+      const findUserByEmailUseCase = await new FindUserByEmailUseCase(
+        userRepositories
+      );
 
       const existingUser = await findUserByEmailUseCase.execute(payload.email);
 
-      console.log(existingUser,"existingusersrr")
+      console.log(existingUser, "existingusersrr");
 
-      if(!existingUser){
+      if (!existingUser) {
         const signupData = {
           email: payload.email,
           password: `${generateRandomString()}`,
-          userName: payload.given_name
-        }
+          userName: payload.given_name,
+        };
 
-        console.log(signupData,"gsignup")
+        console.log(signupData, "gsignup");
 
         return res.status(200).json({
           success: true,
           existingUser: false,
           data: signupData,
-          message: "User Google Login"
-        })
-
+          message: "User Google Login",
+        });
       } else {
-
         const access_token = generateAccessToken({
           _id: String(existingUser?._id),
           email: existingUser.email,
-          role: existingUser.role
+          role: existingUser.role,
         });
         const refresh_token = generateRefreshToken({
           _id: String(existingUser?._id),
           email: existingUser.email,
-          role: existingUser.role
+          role: existingUser.role,
         });
-  
+
         res.cookie("access_token", access_token, {
           httpOnly: true,
           secure: true,
-          sameSite: "none"
+          sameSite: "none",
         });
         res.cookie("refresh_token", refresh_token, {
           httpOnly: true,
           secure: true,
-          sameSite: "none"
+          sameSite: "none",
         });
 
         return res.status(200).json({
           success: true,
           existingUser: true,
           data: existingUser,
-          message: "Google Login successfully"
-        })
+          message: "Google Login successfully",
+        });
       }
-
     } catch (error) {
-      console.log(error,"error while authenticating with google");
+      console.log(error, "error while authenticating with google");
       res.status(500).json({
-        message: "something happened logging gauth"
+        message: "something happened logging gauth",
       });
     }
   }
+
+  static async forgotPasswordMail(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | any> {
+    try {
+      console.log(req.body, "email");
+      const { email } = req.body;
+
+      const findUserByEmailUseCase = await new FindUserByEmailUseCase(
+        userRepositories
+      );
+
+      const result = await findUserByEmailUseCase.execute(email);
+
+      console.log(result, "forgotexistingsuer");
+      if (result?.isGAuth) {
+        return res.status(200).json({
+          success: true,
+          data: result,
+          isGAuth: true,
+          message: "This User is Logged in google",
+        });
+      }
+
+      const token = await generateForgotPasswordToken({email});
+
+      console.log(token,"tokeeeen")
+
+      if(!token){
+        throw new Error("Token is empty");
+      }
+
+      const userName = result?.userName;
+
+      if(!userName){
+        throw new Error("No username is provided")
+      }
+
+      await MailService.sendForgotPasswordMail(email,token,result?.userName);
+
+      res.status(200).json({
+        success: true,
+        data: {},
+        message: "reset password mail produced"
+      });
+
+    } catch (error) {
+      next(error)
+    }
+  }
+  static async resetPassword(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | any> {
+    try {
+
+      const { token, password } = req.body;
+
+      const isVerified: any = await verifyForgotPasswordToken(token);
+
+      if(!isVerified){
+        return res.status(404).json({
+          success: false,
+          data: {},
+          message: "Invalid token or expired token"
+        });
+      };
+      console.log(isVerified,"verify tttoken")
+
+      const hash = await hashPassword(password);
+
+      const resetPasswordUseCase = await new ResetPassword(userRepositories);
+
+      const result = await resetPasswordUseCase.execute(isVerified.email,hash);
+
+      if(!result){
+        throw new Error("reseting password failed");
+      }
+
+      res.status(200).json({
+        success: true,
+        data: result,
+        message: "password reseted"
+    });
+
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  static async updateUserName(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | any> {
+    try {
+
+      console.log(req.body)
+      const { userName, email } = req.body;
+
+      const updateUserNameUseCase = new UpdateUserNameUseCase(userRepositories);
+
+      const result = updateUserNameUseCase.execute(userName,email);
+
+      if(!result){
+        res.status(404).json({
+          success: false,
+          message: "username updation is failed"
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        data: result,
+        message: "username updated"
+    });
+
+    } catch (error) {
+      next(error)
+    }
+  }
+
 }

@@ -97,6 +97,46 @@ class UserRepository implements IUserRepository {
             throw new Error(error.message)
         }
     }
+
+     async resetPassword(email: string, password: string): Promise<UserEntity> {
+         try {
+            
+            const isUpdatePassword = await UserModel.findOneAndUpdate(
+                {email},
+                {password},
+                {new: true}
+            )
+
+            if(!isUpdatePassword){
+                throw new Error("password updation failed")
+            }
+
+            return isUpdatePassword;
+
+         } catch (error: any) {
+            throw new Error(error.message)
+         }
+     }
+
+     async updateUserName(userName: string, email: string): Promise<UserEntity> {
+         try {
+            
+            const updateName = await UserModel.findOneAndUpdate(
+                {email},
+                {userName},
+                {new: true}
+            );
+
+            if(!updateName){
+                throw new Error("username updation failed");
+            }
+
+            return updateName;
+
+         } catch (error: any) {
+            throw new Error(error.message)
+         }
+     }
 }
 
 export default new UserRepository();
