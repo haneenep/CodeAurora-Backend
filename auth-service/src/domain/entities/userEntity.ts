@@ -6,12 +6,13 @@ export interface UserEntity {
     userName: string;
     email: string;
     password: string;
-    role: string;
-    profileImage: string;
-    isBlocked: boolean;
-    isGAuth: boolean;
+    role?: string;
+    isAdmin?: boolean;
+    profileImage?: string;
     bio?: string;
-    isAdmin?: boolean
+    isGAuth?: boolean;
+    isBlocked?: boolean;
+    status?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
 }

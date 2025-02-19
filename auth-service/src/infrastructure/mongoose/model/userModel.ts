@@ -36,6 +36,10 @@ const UserSchema : Schema = new Schema(
             type: Boolean,
             default: false
         },
+        isBlocked: {
+            type: Boolean,
+            default: false
+        },
         createdAt: {
             type: Date
         },
