@@ -4,16 +4,15 @@ import { IUserRepository } from "@/domain/IRepositories/IUserRepositories";
 import { hashPassword } from "../../../lib/http/bcrypt/hashPassword";
 
 export class SignupUserCase {
-    constructor(
-        private UserRepository : IUserRepository
-    ) {}
-    async execute(data: SignupRequestDto): Promise<UserEntity | null>{
+  constructor(private UserRepository: IUserRepository) {}
+  
+  async execute(signupDto: SignupRequestDto): Promise<UserEntity | null> {
+    const { data } = signupDto;
 
-        const hashedPassword = await hashPassword(data.password);
+    const hashedPassword = await hashPassword(data.password);
 
-        const userData = { ...data, password: hashedPassword};
+    const userData = { ...data, password: hashedPassword, role: "user" };
 
-        return await this.UserRepository.create(userData);
-
-    }
-}   
+    return await this.UserRepository.create(userData);
+  }
+}

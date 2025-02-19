@@ -1,30 +1,53 @@
-import {Router} from "express"
-import { UserController } from "../controller/userController";
+import { Router } from "express";
 import { jwtMiddleWare } from "../../lib/common/middlewares/jwtMiddleware";
+import {
+  ForgotPasswordcontroller,
+  GoogleAuthController,
+  RegisterController,
+  ResetPasswordController,
+  SigninController,
+} from "../controller/auth";
+import {
+  FindUserByEmailController,
+  GetUserController,
+  UpdateUserProfileController,
+} from "../controller/user";
+import {
+  SendOtpMailController,
+  VerfiyingOtpController,
+} from "../controller/otp";
+
 
 const userRouter = Router();
 
-// const userController = new UserController();
 
+userRouter.post("/signup", RegisterController.register);
 
-userRouter.post('/signup',UserController.register);
+userRouter.get(
+  "/find-email/:email",
+  FindUserByEmailController.findingUserByEmail
+);
 
-userRouter.get('/find-email/:email',UserController.findingUserEmail);
+userRouter.post(
+  "/email-verification",
+  SendOtpMailController.SendOTPVerificationEmail
+);
 
-userRouter.post('/email-verification',UserController.SendVerificationEmail);
+userRouter.post("/verify-otp", VerfiyingOtpController.OtpVerification);
 
-userRouter.post('/verify-otp',UserController.OtpVerification);
+userRouter.post("/signin", SigninController.signin);
 
-userRouter.post('/signin', UserController.signin);
+userRouter.get("/get-userdata", jwtMiddleWare, GetUserController.getUserData);
 
-userRouter.get('/get-userdata',jwtMiddleWare,UserController.getUserData);
+userRouter.post("/google-auth", GoogleAuthController.googleAuthentication);
 
-userRouter.post('/google-auth', UserController.googleAuthentication);
+userRouter.post(
+  "/forgot-password-mail",
+  ForgotPasswordcontroller.forgotPasswordMail
+);
 
-userRouter.post('/forgot-password-mail',UserController.forgotPasswordMail);
+userRouter.post("/reset-password", ResetPasswordController.resetPassword);
 
-userRouter.post('/reset-password',UserController.resetPassword);
-
-userRouter.put('/user-profile',UserController.updateUserName);
+userRouter.put("/user-profile", UpdateUserProfileController.updateUserProfile);
 
 export default userRouter;

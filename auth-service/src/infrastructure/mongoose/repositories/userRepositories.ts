@@ -35,7 +35,7 @@ class UserRepository implements IUserRepository {
         } catch (error) {
             
             console.error(error);
-            throw new Error("Error while Find User in this email ");
+            throw new Error("Error Finding User by email ");
             
         }
     }
@@ -56,8 +56,8 @@ class UserRepository implements IUserRepository {
 
             return true;
 
-        } catch (error) {
-            
+        } catch (error: any) {
+            throw new Error("error veryfying otp:" +error.message)
         }
     }
 
@@ -118,7 +118,7 @@ class UserRepository implements IUserRepository {
          }
      }
 
-     async updateUserName(userName: string, email: string): Promise<UserEntity> {
+     async updateUserProfile(userName: string, email: string): Promise<UserEntity> {
          try {
             
             const updateName = await UserModel.findOneAndUpdate(

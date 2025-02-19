@@ -1,4 +1,4 @@
-import { resetPasswordPage } from "@/utils/resetPasswordPage";
+import { resetPasswordPage } from "../utils/resetPasswordPage";
 import { sendEmail } from ".././config/nodemailer";
 import { OTP } from "../infrastructure/mongoose/model/otpModel";
 import generateOtp from "../utils/generateOtp";
