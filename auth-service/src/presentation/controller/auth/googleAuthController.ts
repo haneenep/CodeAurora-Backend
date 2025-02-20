@@ -5,18 +5,20 @@ import { OAuth2Client } from "google-auth-library";
 import userRepositories from "../../../infrastructure/mongoose/repositories/userRepositories";
 import { generateRandomString } from "../../../lib/utils/generateRandomString";
 import { AuthHelper } from "../../../lib/utils/authHelpers";
+import { config } from "dotenv";
+
+config()
 
 
-
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export class GoogleAuthController {
-    private static readonly client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
     static async googleAuthentication(req: Request, res: Response): Promise<void> {
         try {
           const { credential } = req.body;
     
-          const ticket = await this.client.verifyIdToken({
+          const ticket = await client.verifyIdToken({
             idToken: credential,
             audience: process.env.GOOGLE_CLIENT_ID,
           });
