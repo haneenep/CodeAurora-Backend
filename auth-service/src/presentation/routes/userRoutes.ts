@@ -3,6 +3,7 @@ import { jwtMiddleWare } from "../../lib/common/middlewares/jwtMiddleware";
 import {
   ForgotPasswordcontroller,
   GoogleAuthController,
+  LogoutController,
   RegisterController,
   ResetPasswordController,
   SigninController,
@@ -49,5 +50,7 @@ userRouter.post(
 userRouter.post("/reset-password", ResetPasswordController.resetPassword);
 
 userRouter.put("/user-profile", UpdateUserProfileController.updateUserProfile);
+
+userRouter.delete('/logout', LogoutController.logout);
 
 export default userRouter;
