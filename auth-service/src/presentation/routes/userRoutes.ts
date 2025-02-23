@@ -10,6 +10,7 @@ import {
 } from "../controller/auth";
 import {
   FindUserByEmailController,
+  GetAllUserController,
   GetUserController,
   UpdateUserProfileController,
 } from "../controller/user";
@@ -52,5 +53,7 @@ userRouter.post("/reset-password", ResetPasswordController.resetPassword);
 userRouter.put("/user-profile", UpdateUserProfileController.updateUserProfile);
 
 userRouter.delete('/logout', LogoutController.logout);
+
+userRouter.get('/get-all-users', GetAllUserController.getAllUser);
 
 export default userRouter;
