@@ -46,11 +46,6 @@ const UserSchema : Schema = new Schema(
         updatedAt: {
             type: Date
         },
-        status: {
-            type: Boolean,
-            required: true,
-            default: true
-        },
         subscriptionType: {
             type: String,
             required: true,

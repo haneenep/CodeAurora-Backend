@@ -20,6 +20,14 @@ export class SigninController {
     
           try {
             const user = await signinUseCase.execute(dto);
+
+            if(user.isBlocked){
+              res.status(HttpStatus.UNAUTHORIZED).json({
+                success: false,
+                message: "CodeAurora team blocked your account"
+              });
+              return;
+            }
     
             AuthHelper.setAuthCookies(res, user)
     
