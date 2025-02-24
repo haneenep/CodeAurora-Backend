@@ -12,7 +12,6 @@ export interface UserEntity {
     bio?: string;
     isGAuth?: boolean;
     isBlocked?: boolean;
-    status?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
 }

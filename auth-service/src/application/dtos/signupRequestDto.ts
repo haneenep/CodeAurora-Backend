@@ -10,7 +10,6 @@ export class SignupRequestDto {
       bio: string;
       isGAuth: boolean;
       isBlocked: boolean;
-      status: boolean;
     }
   ) {}
 }
