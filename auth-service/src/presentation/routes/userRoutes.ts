@@ -9,6 +9,7 @@ import {
   SigninController,
 } from "../controller/auth";
 import {
+  BlockUserController,
   FindUserByEmailController,
   GetAllUserController,
   GetUserController,
@@ -55,5 +56,7 @@ userRouter.put("/user-profile", UpdateUserProfileController.updateUserProfile);
 userRouter.delete('/logout', LogoutController.logout);
 
 userRouter.get('/get-all-users', GetAllUserController.getAllUser);
+
+userRouter.patch('/block-user/:userId', BlockUserController.blockUser);
 
 export default userRouter;
