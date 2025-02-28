@@ -34,7 +34,7 @@ export class BlockUserController {
         success: true,
         message: `User ${isBlocked ? "blocked" : "unblocked"} successfully`,
         data: result,
-      });
+      });  
     } catch (error) {
       next(error);
     }

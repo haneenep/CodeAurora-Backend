@@ -8,5 +8,6 @@ export interface IUserRepository {
     signin(data:{email: string, password: string}): Promise<UserEntity>
     getUserData(_id: string): Promise<UserEntity | null>
     resetPassword(email: string, password: string): Promise<UserEntity>
-    updateUserProfile(userName: string, email: string): Promise<UserEntity>
+    updateUserName(userName: string, email: string): Promise<UserEntity>;
+    changePassword(email: string, currPassword: string, newPassword: string): Promise<UserEntity>
 }

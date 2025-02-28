@@ -1,11 +1,11 @@
-import { UpdateUserProfileUseCase } from "../../../application/interface/useCases";
+import { UpdateUserNameUseCase } from "../../../application/interface/useCases";
 import { HttpStatus } from "../../../constants/HttpStatus";
 import userRepositories from "../../../infrastructure/mongoose/repositories/userRepositories";
 import { NextFunction, Request, Response } from "express";
 
 
-export class UpdateUserProfileController {
-    static async updateUserProfile(
+export class UpdateUserNameController {
+    static async updateUserName(
         req: Request,
         res: Response,
         next: NextFunction
@@ -14,9 +14,9 @@ export class UpdateUserProfileController {
           console.log(req.body);
           const { userName, email } = req.body;
     
-          const updateUserProfileUseCase = new UpdateUserProfileUseCase(userRepositories);
+          const updateUserNameUseCase = new UpdateUserNameUseCase(userRepositories);
     
-          const result = updateUserProfileUseCase.execute(userName, email);
+          const result = updateUserNameUseCase.execute(userName, email);
     
           if (!result) {
             res.status(HttpStatus.UNAUTHORIZED).json({

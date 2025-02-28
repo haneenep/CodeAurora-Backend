@@ -3,6 +3,7 @@ import UserModel from "../model/userModel";
 import { IUserRepository } from "@/domain/IRepositories/IUserRepositories";
 import { OTP } from "../model/otpModel";
 import { comparePassword } from "../../../lib/http/bcrypt/comparePassword";
+import { hashPassword } from "../../../lib/http/bcrypt/hashPassword";
 
 
 class UserRepository implements IUserRepository {
@@ -118,7 +119,7 @@ class UserRepository implements IUserRepository {
          }
      }
 
-     async updateUserProfile(userName: string, email: string): Promise<UserEntity> {
+     async updateUserName(userName: string, email: string): Promise<UserEntity> {
          try {
             
             const updateName = await UserModel.findOneAndUpdate(
@@ -136,6 +137,40 @@ class UserRepository implements IUserRepository {
          } catch (error: any) {
             throw new Error(error.message)
          }
+     }
+
+     async changePassword(email: string, currPassword: string, newPassword: string): Promise<UserEntity> {
+        try {
+
+            const user = await UserModel.findOne({email});
+
+            if(!user){
+                throw new Error("user not found in db");
+            }
+            
+            const isMatch = await comparePassword(currPassword, user?.password);
+
+            if(!isMatch){
+                throw new Error("users current password is not matching")
+            };
+
+            const hashedPassword = await hashPassword(newPassword);
+
+            const updatePassword = await UserModel.findOneAndUpdate(
+                {email},
+                {password: hashedPassword},
+                {new: true}
+            );
+
+            if(!updatePassword){
+                throw new Error("user password updation failed");
+            };
+
+            return updatePassword;
+
+        } catch (error: any) {
+            throw new Error(error.message)
+        }
      }
 }
 

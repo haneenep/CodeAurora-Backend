@@ -1,6 +1,6 @@
 import express, {Application, json, NextFunction, Request, Response} from 'express';
 import database from './infrastructure/config/database';
-import userRouter from './presentation/routes/userRoutes';
+import userRouter from './presentation/routes/user.routes';
 import cookies from "cookie-parser";
 import { config } from 'dotenv';
 

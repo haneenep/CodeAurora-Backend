@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { jwtMiddleWare } from "../../lib/common/middlewares/jwtMiddleware";
 import {
+  ChangePasswordController,
   ForgotPasswordcontroller,
   GoogleAuthController,
   LogoutController,
@@ -13,16 +14,14 @@ import {
   FindUserByEmailController,
   GetAllUserController,
   GetUserController,
-  UpdateUserProfileController,
+  UpdateUserNameController,
 } from "../controller/user";
 import {
   SendOtpMailController,
   VerfiyingOtpController,
 } from "../controller/otp";
 
-
 const userRouter = Router();
-
 
 userRouter.post("/signup", RegisterController.register);
 
@@ -51,12 +50,14 @@ userRouter.post(
 
 userRouter.post("/reset-password", ResetPasswordController.resetPassword);
 
-userRouter.put("/user-profile", UpdateUserProfileController.updateUserProfile);
+userRouter.put("/update-name", UpdateUserNameController.updateUserName);
 
-userRouter.delete('/logout', LogoutController.logout);
+userRouter.delete("/logout", LogoutController.logout);
 
-userRouter.get('/get-all-users', GetAllUserController.getAllUser);
+userRouter.get("/get-all-users", GetAllUserController.getAllUser);
 
-userRouter.patch('/block-user/:userId', BlockUserController.blockUser);
+userRouter.patch("/block-user/:userId", BlockUserController.blockUser);
+
+userRouter.patch("/change-password", ChangePasswordController.changePassword);
 
 export default userRouter;
