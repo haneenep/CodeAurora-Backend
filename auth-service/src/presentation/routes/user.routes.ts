@@ -11,10 +11,10 @@ import {
 } from "../controller/auth";
 import {
   BlockUserController,
+  EditUserProfileController,
   FindUserByEmailController,
   GetAllUserController,
   GetUserController,
-  UpdateUserNameController,
 } from "../controller/user";
 import {
   SendOtpMailController,
@@ -50,7 +50,7 @@ userRouter.post(
 
 userRouter.post("/reset-password", ResetPasswordController.resetPassword);
 
-userRouter.put("/update-name", UpdateUserNameController.updateUserName);
+userRouter.put("/edit-profile", EditUserProfileController.editUserProfile);
 
 userRouter.delete("/logout", LogoutController.logout);
 
