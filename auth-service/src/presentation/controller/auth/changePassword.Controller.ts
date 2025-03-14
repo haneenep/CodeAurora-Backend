@@ -2,11 +2,13 @@ import { ChangePasswordUseCase } from "../../../application/interface/useCases/c
 import { HttpStatus } from "../../../constants/HttpStatus";
 import { NextFunction, Request, Response } from "express";
 import userRepositories from "../../../infrastructure/mongoose/repositories/userRepositories";
-
-
-
+import { validateRequest } from "../../../lib/common/middlewares/validationMiddleware";
+import { passwordChangeSchema } from "../../../lib/validation";
 
 export class ChangePasswordController {
+
+    static validateChangePassword = validateRequest(passwordChangeSchema)
+
     static async changePassword(req: Request, res: Response, next: NextFunction): Promise<void>{
 
         try {

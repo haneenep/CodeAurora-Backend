@@ -50,7 +50,11 @@ userRouter.post(
 
 userRouter.post("/reset-password", ResetPasswordController.resetPassword);
 
-userRouter.put("/edit-profile", EditUserProfileController.editUserProfile);
+userRouter.put(
+  "/edit-profile",
+  EditUserProfileController.validateEditProfile,
+  EditUserProfileController.editUserProfile
+);
 
 userRouter.delete("/logout", LogoutController.logout);
 
@@ -58,6 +62,10 @@ userRouter.get("/get-all-users", GetAllUserController.getAllUser);
 
 userRouter.patch("/block-user/:userId", BlockUserController.blockUser);
 
-userRouter.patch("/change-password", ChangePasswordController.changePassword);
+userRouter.patch(
+  "/change-password",
+  ChangePasswordController.validateChangePassword,
+  ChangePasswordController.changePassword
+);
 
 export default userRouter;
