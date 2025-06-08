@@ -1,2 +1,2 @@
-export * from "./sendOtpController";
-export * from "./verifyOtpController"
+export * from "./sendOtp.Controller";
+export * from "./verifyOtp.Controller"
