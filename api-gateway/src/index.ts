@@ -39,6 +39,10 @@ const routes = [
   {
     path: "/problem",
     target: env.PROBLEM_SERVICE
+  },
+    {
+    path: "/notification",
+    target: env.NOTIFICATION_SERVICE,
   }
 ]
 
